@@ -1,0 +1,13 @@
+# Latest versions for Python 3.10+
+gradio>=6.0.0
+replicate>=0.34.0
+google-generativeai>=0.8.0
+moviepy==1.0.3
+imageio>=2.9.0
+imageio-ffmpeg>=0.4.5
+Pillow>=10.0.0
+python-dotenv>=1.0.0
+httpx>=0.27.0
+packaging
+numpy>=1.24.0
+
