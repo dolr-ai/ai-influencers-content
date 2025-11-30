@@ -179,27 +179,29 @@ def generate_all_clips(
                 f"Generating segment {i + 1}/{total_segments}..."
             )
         
-        # Build a clear, concise prompt paragraph with script, mood, and style
-        narration = segment.get("narration", "")
-        mood = segment.get("mood", "")
-        visual = segment.get("visual_description", "")
-        
-        # Create a single paragraph combining narration, mood, and visual style
-        prompt_parts = []
-        
-        if narration:
-            prompt_parts.append(f"The person says: '{narration}'")
-        
-        if visual:
-            prompt_parts.append(visual)
-        
-        if mood:
-            prompt_parts.append(f"with a {mood} mood")
-        
-        # Add style guidance
-        prompt_parts.append("cinematic, high-quality social media content style")
-        
-        prompt = ". ".join(prompt_parts) + "."
+        # Check if segment has a direct "prompt" field (from editing/regeneration)
+        if "prompt" in segment and segment["prompt"].strip():
+            # Use the prompt directly (user edited or LLM formatted)
+            prompt = segment["prompt"]
+        else:
+            # Build from structured fields (original LLM script generation)
+            # Focus on: what the character SAYS + their EXPRESSION
+            # (The image already provides appearance and background)
+            narration = segment.get("narration", "")
+            expression = segment.get("expression", segment.get("mood", ""))
+            
+            # Create prompt focusing on dialogue and expression
+            prompt_parts = []
+            
+            if narration:
+                prompt_parts.append(f"The person says: '{narration}'")
+            
+            if expression:
+                prompt_parts.append(f"with {expression}")
+            else:
+                prompt_parts.append("speaking naturally")
+            
+            prompt = ". ".join(prompt_parts) + "."
         
         video_path = generate_single_clip(
             prompt=prompt,
