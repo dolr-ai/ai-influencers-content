@@ -36,7 +36,7 @@ def generate_script(
     
     genai.configure(api_key=gemini_key)
     
-    model = genai.GenerativeModel("gemini-2.5-pro-preview-06-05")
+    model = genai.GenerativeModel("gemini-2.0-flash-exp")
     
     prompt = f"""You are an expert short-form video content creator and scriptwriter. 
 You specialize in creating engaging, viral-worthy scripts for AI-generated explanation videos.

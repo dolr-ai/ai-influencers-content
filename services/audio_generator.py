@@ -1,3 +1,4 @@
+
 """
 Audio Generation Service using ElevenLabs
 Performs speech-to-speech voice-over on final video
@@ -46,7 +47,7 @@ def generate_voiceover(
     video_path: str,
     elevenlabs_api_key: str,
     voice_id: str = "Leo",  # Leo - Energetic Hindi Voice
-    model: str = "eleven_multilingual_v2"
+    model: str = "eleven_multilingual_sts_v2"
 ) -> str:
     """
     Generate voice-over for video using ElevenLabs speech-to-speech.
@@ -55,7 +56,7 @@ def generate_voiceover(
         video_path: Path to the video file
         elevenlabs_api_key: ElevenLabs API key
         voice_id: Voice ID to use (default: "Leo")
-        model: Model to use (default: "eleven_multilingual_v2")
+        model: Model to use (default: "eleven_multilingual_sts_v2")
     
     Returns:
         Path to the final video with new voice-over
@@ -119,6 +120,32 @@ def generate_voiceover(
         raise RuntimeError(f"Failed to replace audio in video: {e.stderr.decode()}")
 
 
+def get_voice_id(voice_name: str = "Leo") -> str:
+    """
+    Get the voice ID for the specified voice.
+    
+    Args:
+        voice_name: Name of the voice (default: "Leo")
+    
+    Returns:
+        Voice ID string
+    """
+    # Known voice IDs
+    voice_mapping = {
+        "leo": "IvLWq57RKibBrqZGpQrC",  # Leo - Energetic Hindi Voice
+        "rachel": "21m00Tcm4TlvDq8ikWAM",  # Rachel (English) - fallback
+    }
+    
+    voice_key = voice_name.lower()
+    if voice_key in voice_mapping:
+        print(f"✅ Using voice: {voice_name} (ID: {voice_mapping[voice_key]})")
+        return voice_mapping[voice_key]
+    
+    # Default fallback to Leo
+    print(f"⚠️ Voice '{voice_name}' not found. Using Leo as default.")
+    return voice_mapping["leo"]
+
+
 def add_voiceover_to_video(
     video_path: str,
     elevenlabs_api_key: str,
@@ -138,11 +165,10 @@ def add_voiceover_to_video(
         Path to the video with voice-over
     """
     if progress_callback:
-        progress_callback(0.1, "Extracting audio from video...")
+        progress_callback(0.1, "Getting voice information...")
     
-    # Map voice names to IDs (you may need to adjust these)
-    # Get voice ID from ElevenLabs or use the voice name directly
-    voice_id = "Leo"  # Leo - Energetic Hindi Voice
+    # Get the actual voice ID
+    voice_id = get_voice_id("Leo")
     
     if progress_callback:
         progress_callback(0.3, "Generating voice-over with ElevenLabs...")
@@ -151,7 +177,7 @@ def add_voiceover_to_video(
         video_path=video_path,
         elevenlabs_api_key=elevenlabs_api_key,
         voice_id=voice_id,
-        model="eleven_multilingual_v2"
+        model="eleven_multilingual_sts_v2"
     )
     
     if progress_callback:
