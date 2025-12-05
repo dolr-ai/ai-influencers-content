@@ -10,18 +10,22 @@ Transform your ideas into stunning AI-generated short-form videos using Google V
 
 - **Idea to Script**: Enter any content idea and get an AI-generated script broken into timed segments
 - **Smart Segmentation**: Scripts are automatically divided into 4, 6, or 8-second segments (optimized for Veo 3.1)
-- **Script Review**: Edit and refine your script before video generation
+- **Script Editing**: Edit scripts freely - LLM automatically formats them into proper segments
 - **AI Influencer Consistency**: Upload a reference image to maintain consistent appearance across all segments
 - **Automated Video Generation**: Generate video clips using Google Veo 3.1 via Replicate
+- **Clip Review & Regeneration**: Review each generated clip individually and regenerate any that don't meet quality standards
 - **Seamless Stitching**: Automatically combine all segments into a final polished video
+- **AI Voice-Over**: Add professional voice-over using ElevenLabs speech-to-speech (Leo - Energetic Hindi Voice)
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
 - Python 3.9 or higher
+- FFmpeg installed (for audio extraction and video processing)
 - Google Gemini API key (for script generation with Gemini 2.5 Pro)
 - Replicate API token (for Veo video generation)
+- ElevenLabs API key (for voice-over generation)
 
 ### Installation
 
@@ -57,28 +61,34 @@ The app will start at `http://localhost:7860`
 
 ## 📖 How to Use
 
-### Step 1: Enter Your Idea
+### Step 1: Generate Script
 - Type your content idea (e.g., "5 productivity hacks that changed my life")
 - Select total video duration (30 or 45 seconds)
 - Choose segment duration (4, 6, or 8 seconds based on Veo 3.1 capabilities)
+- Click "Generate Script"
 
-### Step 2: Review the Script
-- AI generates a detailed script with:
-  - Visual descriptions for each segment
-  - Narration/dialogue
-  - Text overlays
-  - Mood/emotional direction
-- Edit the script in JSON format if needed
+### Step 1.5: Edit Script (Optional)
+- Review the AI-generated script with dialogue and expressions
+- Edit freely in natural language - the LLM will auto-format it
+- Click "Update Script" to save changes
 
-### Step 3: Upload Reference Image
-- Upload a clear image of your AI influencer
+### Step 2: Generate Video
+- Upload a clear reference image of your AI influencer
 - Select aspect ratio (9:16 for TikTok/Reels, 16:9 for YouTube)
 - Enable/disable smooth transitions
-
-### Step 4: Generate Video
 - Click "Generate Video" to create all segments
-- Videos are automatically stitched together
-- Download your final video!
+
+### Step 3: Review & Regenerate Clips (Optional)
+- Use the slider to review each generated clip
+- See what prompt was actually sent to Veo
+- Edit prompts and regenerate any clips that need improvement
+- Click "Finalize & Stitch All Clips" when satisfied
+
+### Step 4: Add Voice-Over
+- Choose whether to add voice-over with ElevenLabs
+- Uses "Leo - Energetic Hindi Voice" with Multilingual v2 model
+- Performs speech-to-speech conversion for natural results
+- Download your final video with professional voice-over!
 
 ## 🔧 Configuration
 
@@ -110,23 +120,27 @@ ai-content-pipeline/
     ├── __init__.py
     ├── script_generator.py    # Gemini 2.5 Pro script generation
     ├── video_generator.py     # Replicate Veo integration
-    └── video_stitcher.py      # Video concatenation
+    ├── video_stitcher.py      # Video concatenation
+    └── audio_generator.py     # ElevenLabs voice-over
 ```
 
 ## 🛠 Tech Stack
 
-- **Frontend**: Gradio 4.44+
-- **Script Generation**: Google Gemini 2.5 Pro
+- **Frontend**: Gradio 6.0+
+- **Script Generation**: Google Gemini 2.5 Pro & 2.0 Flash
 - **Video Generation**: Google Veo 3.1 via Replicate
-- **Video Processing**: MoviePy
+- **Voice-Over**: ElevenLabs Multilingual v2
+- **Video Processing**: MoviePy & FFmpeg
 - **Image Handling**: Pillow
 
 ## 💡 Tips
 
 1. **Clear Reference Images**: Use high-quality, well-lit images for better AI influencer consistency
 2. **Specific Ideas**: More detailed ideas generate better scripts
-3. **Script Editing**: Review and tweak the JSON script for better results
+3. **Script Editing**: Write naturally - the LLM will format it automatically
 4. **Segment Duration**: 6 seconds is a good balance between quality and variety
+5. **Review Clips**: Always review individual clips before finalizing - regenerate any that need improvement
+6. **Voice-Over**: ElevenLabs adds professional polish to your final video
 
 ## ⚠️ Notes
 
