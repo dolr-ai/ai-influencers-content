@@ -36,21 +36,20 @@ def generate_script(
     
     genai.configure(api_key=gemini_key)
     
-    model = genai.GenerativeModel("gemini-2.5-pro-preview-06-05")
+    model = genai.GenerativeModel("gemini-2.0-flash-exp")
     
     prompt = f"""You are an expert short-form video content creator and scriptwriter. 
-You specialize in creating engaging, viral-worthy scripts for AI-generated video content.
-Your scripts should be visually descriptive, emotionally engaging, and perfectly timed.
+You specialize in creating engaging, viral-worthy scripts for AI-generated explanation videos.
 
 IMPORTANT GUIDELINES:
-- Each segment must be self-contained with clear visual direction
-- Include specific camera angles, movements, and transitions
-- Describe the AI influencer's actions, expressions, and positioning
-- Include any text overlays or captions to display
-- Make the content hook-worthy from the first second
-- End with a strong call-to-action or memorable moment
+- The AI influencer's appearance and background are provided via a reference image
+- Focus on WHAT THE CHARACTER SAYS (narration/dialogue)
+- Specify the CHARACTER'S EXPRESSIONS and EMOTIONS for each segment
+- DO NOT include text overlays - this is a spoken explanation video
+- Make the content engaging and easy to follow
+- Each segment should flow naturally to the next
 
-Create a script for a {total_duration}-second short-form video about:
+Create a script for a {total_duration}-second explanation video about:
 
 "{idea}"
 
@@ -60,10 +59,8 @@ For EACH segment, provide:
 1. **segment_number**: The segment order (1, 2, 3, etc.)
 2. **start_time**: Start time in seconds
 3. **end_time**: End time in seconds
-4. **visual_description**: Detailed visual direction for AI video generation (describe the scene, the AI influencer's appearance/actions, camera angle, lighting, background, any motion)
-5. **narration**: What the AI influencer says or any voiceover (if any)
-6. **text_overlay**: Any on-screen text to display
-7. **mood**: The emotional tone of this segment
+4. **narration**: What the AI influencer says (the actual dialogue/script)
+5. **expression**: The facial expression and emotion the character should convey (e.g., "excited and smiling", "thoughtful and serious", "surprised with raised eyebrows")
 
 Return ONLY a valid JSON array with {num_segments} objects. No additional text, no markdown code blocks, just pure JSON.
 
@@ -73,9 +70,8 @@ Example format:
     "segment_number": 1,
     "start_time": 0,
     "end_time": {segment_duration},
-    "visual_description": "Close-up of AI influencer looking directly at camera with excited expression...",
-    "narration": "You won't believe what I just discovered!",
-    "mood": "excited, attention-grabbing"
+    "narration": "Today I'm going to share something incredible with you",
+    "expression": "excited and smiling, looking directly at camera"
   }}
 ]"""
 
@@ -111,17 +107,14 @@ def format_script_for_display(segments: List[Dict[str, str]]) -> str:
     for seg in segments:
         formatted.append(f"""
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📹 SEGMENT {seg['segment_number']} | ⏱️ {seg['start_time']}s - {seg['end_time']}s | 🎭 {seg.get('mood', 'N/A')}
+📹 SEGMENT {seg['segment_number']} | ⏱️ {seg['start_time']}s - {seg['end_time']}s
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🎬 VISUAL DIRECTION:
-{seg['visual_description']}
-
-🎤 NARRATION:
+🎤 DIALOGUE:
 {seg.get('narration', '(No narration)')}
 
-📝 TEXT OVERLAY:
-{seg.get('text_overlay', '(No overlay)')}
+😊 EXPRESSION:
+{seg.get('expression', seg.get('mood', '(No expression)'))}
 """)
     
     return "\n".join(formatted)
