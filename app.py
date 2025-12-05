@@ -146,9 +146,14 @@ if __name__ == "__main__":
         except OSError:
             continue
     
-    print(f"🚀 Starting AI Content Pipeline on http://localhost:{port}")
+    # Use fixed port for production deployment
+    port = 7860
+    
+    print(f"🚀 Starting AI Content Pipeline on http://0.0.0.0:{port}")
+    print(f"📱 Access at: https://chat.yral.com/content")
     app.launch(
-        server_name="127.0.0.1", 
+        server_name="127.0.0.1",  # Only listen on localhost (nginx will proxy)
         server_port=port, 
-        share=False
+        share=False,
+        root_path="/content"  # Important: allows Gradio to work on subpath
     )
