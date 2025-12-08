@@ -50,10 +50,52 @@ jobs:
             # Stop systemd service if it exists
             systemctl stop gradio-content.service 2>/dev/null || true
             systemctl disable gradio-content.service 2>/dev/null || true
-            # Kill any process using port 7860
-            lsof -ti:7860 | xargs kill -9 2>/dev/null || true
-            ss -tlnp | grep :7860 | awk '{print $6}' | cut -d',' -f2 | xargs -r kill -9 2>/dev/null || true
-            sleep 2
+            
+            # Multiple methods to free port 7860 (try all methods for reliability)
+            # Method 1: Using lsof
+            if command -v lsof >/dev/null 2>&1; then
+              lsof -ti:7860 | xargs kill -9 2>/dev/null || true
+            fi
+            
+            # Method 2: Using ss
+            if command -v ss >/dev/null 2>&1; then
+              ss -tlnp | grep :7860 | awk '{print $6}' | cut -d',' -f2 | xargs -r kill -9 2>/dev/null || true
+              # Alternative ss method
+              ss -tlnp | grep :7860 | grep -oP 'pid=\K[0-9]+' | xargs -r kill -9 2>/dev/null || true
+            fi
+            
+            # Method 3: Using fuser
+            if command -v fuser >/dev/null 2>&1; then
+              fuser -k 7860/tcp 2>/dev/null || true
+            fi
+            
+            # Method 4: Using netstat
+            if command -v netstat >/dev/null 2>&1; then
+              netstat -tlnp 2>/dev/null | grep :7860 | awk '{print $7}' | cut -d'/' -f1 | xargs -r kill -9 2>/dev/null || true
+            fi
+            
+            # Wait for port to be released
+            sleep 3
+            
+            # Verify port is free
+            echo "🔍 Verifying port 7860 is free..."
+            PORT_IN_USE=false
+            if command -v lsof >/dev/null 2>&1 && lsof -ti:7860 >/dev/null 2>&1; then
+              PORT_IN_USE=true
+            elif command -v ss >/dev/null 2>&1 && ss -tln | grep -q :7860; then
+              PORT_IN_USE=true
+            elif command -v netstat >/dev/null 2>&1 && netstat -tln 2>/dev/null | grep -q :7860; then
+              PORT_IN_USE=true
+            fi
+            
+            if [ "$PORT_IN_USE" = true ]; then
+              echo "⚠️  Warning: Port 7860 still in use. Attempting one more cleanup..."
+              # Final aggressive cleanup
+              pkill -f "gradio\|app.py" 2>/dev/null || true
+              sleep 2
+            else
+              echo "✅ Port 7860 is free"
+            fi
             
             echo "🔨 Building Docker image..."
             # Try docker compose (v2) first, fallback to docker-compose (v1)
