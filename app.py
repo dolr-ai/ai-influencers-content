@@ -23,9 +23,10 @@ from services.audio_generator import add_voiceover_to_video
 # Load environment variables
 load_dotenv()
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-REPLICATE_API_TOKEN = os.getenv("REPLICATE_API_TOKEN", "")
-ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
+# Strip whitespace/newlines from API keys to prevent header errors
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "").strip()
+REPLICATE_API_TOKEN = os.getenv("REPLICATE_API_TOKEN", "").strip()
+ELEVENLABS_API_KEY = os.getenv("ELEVENLABS_API_KEY", "").strip()
 
 # Global state
 current_script_segments: List[Dict] = []

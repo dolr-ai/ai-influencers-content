@@ -34,7 +34,8 @@ def generate_script(
     if not gemini_key:
         raise ValueError("Gemini API key not provided")
     
-    genai.configure(api_key=gemini_key)
+    # Strip whitespace/newlines from API key to prevent errors
+    genai.configure(api_key=gemini_key.strip())
     
     model = genai.GenerativeModel("gemini-2.0-flash-exp")
     

@@ -64,7 +64,8 @@ def generate_voiceover(
     print(f"🎤 Starting voice-over generation...")
     
     # Initialize ElevenLabs client
-    client = ElevenLabs(api_key=elevenlabs_api_key)
+    # Strip whitespace/newlines from API key to prevent header errors
+    client = ElevenLabs(api_key=elevenlabs_api_key.strip())
     
     # Step 1: Extract audio from video
     print("📤 Extracting audio from video...")

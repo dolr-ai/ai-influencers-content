@@ -57,7 +57,8 @@ def generate_single_clip(
     Returns:
         Path to the generated video file
     """
-    os.environ["REPLICATE_API_TOKEN"] = replicate_api_token
+    # Strip whitespace/newlines from token to prevent header errors
+    os.environ["REPLICATE_API_TOKEN"] = replicate_api_token.strip()
     
     # Prepare the image input
     image_uri = image_to_data_uri(reference_image_path)
