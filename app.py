@@ -283,6 +283,9 @@ def get_clip_for_review(clip_index: int):
         expression_text = segment.get('expression', segment.get('mood', ''))
         display_lines.append(f"😊 **Expression:** {expression_text}")
     
+    # Show the exact prompt sent to Replicate
+    display_lines.append(f"\n**📝 Exact Prompt to Replicate:**\n`{actual_veo_prompt}`")
+    
     segment_info = "\n".join(display_lines)
     
     return (
@@ -366,8 +369,8 @@ def regenerate_clip_handler(clip_index: int, image, segment_duration: int, aspec
         return f"❌ Error: {str(e)}", None
 
 
-def finalize_video_handler(add_transitions: bool, add_voiceover: bool):
-    """Stitch all clips together after review and optionally add voice-over"""
+def finalize_video_handler(add_transitions: bool):
+    """Stitch all clips together after review"""
     global generated_clips
     
     if not generated_clips:
@@ -386,21 +389,14 @@ def finalize_video_handler(add_transitions: bool, add_voiceover: bool):
             print(f"  Position {i}: segment_idx={clip['segment_idx']}, path={os.path.basename(clip['video_path'])}")
         print(f"📹 Video paths order: {[os.path.basename(path) for path in video_paths]}")
         
-        # Step 1: Stitch videos
+        # Stitch videos
         output_path = os.path.join(temp_dir, "final_output_reviewed.mp4")
         final_video = stitch_videos(video_paths, output_path, add_transitions)
         
-        status = f"✅ Final video created with {len(video_paths)} segments!"
+        status = f"✅ Final video stitched with {len(video_paths)} segments! Proceed to Step 5 to add voice-over."
         
-        # Step 2: Add voice-over if requested
-        if add_voiceover:
-            if not ELEVENLABS_API_KEY:
-                return "❌ No ElevenLabs API key provided in .env file", final_video, gr.update(visible=False)
-            
-            status += "\n🎤 Adding voice-over..."
-            return status, final_video, gr.update(visible=True, value=final_video)
-        
-        return status, final_video, gr.update(visible=False)
+        # Always show voice-over section as next step
+        return status, final_video, gr.update(visible=True)
     except Exception as e:
         return f"❌ Error: {str(e)}", None, gr.update(visible=False)
 
@@ -448,13 +444,13 @@ with gr.Blocks(title="AI Content Pipeline") as app:
             with gr.Column(scale=1):
                 with gr.Group():
                     total_duration = gr.Radio(
-                        [30, 45], 
-                        value=30, 
+                        [30, 40], 
+                        value=40, 
                         label="⏱️ Total Duration (seconds)"
                     )
                     segment_duration = gr.Radio(
                         [4, 6, 8], 
-                        value=6, 
+                        value=8, 
                         label="🎞️ Segment Length (seconds)"
                     )
         
@@ -554,13 +550,13 @@ with gr.Blocks(title="AI Content Pipeline") as app:
             
             with gr.Row():
                 with gr.Column(scale=1):
-                    clip_selector = gr.Slider(
+                    clip_selector = gr.Number(
                         minimum=1, 
-                        maximum=10, 
-                        step=1, 
+                        maximum=10,
                         value=1, 
                         label="🎞️ Select Clip to Review",
-                        interactive=True
+                        interactive=True,
+                        precision=0
                     )
                 with gr.Column(scale=2):
                     review_status = gr.Textbox(
@@ -594,6 +590,11 @@ with gr.Blocks(title="AI Content Pipeline") as app:
                             placeholder="E.g., The person says: 'Hello everyone!' with an excited, energetic expression"
                         )
                     with gr.Column(scale=1):
+                        regenerate_segment_duration = gr.Radio(
+                            [4, 6, 8], 
+                            value=6, 
+                            label="⏱️ Segment Length (seconds)"
+                        )
                         regenerate_btn = gr.Button(
                             "🔄 Regenerate Clip", 
                             variant="secondary", 
@@ -609,7 +610,7 @@ with gr.Blocks(title="AI Content Pipeline") as app:
         
         # Step 4: Finalize
         with gr.Group():
-            gr.Markdown("## ✨ Step 4: Create Final Video")
+            gr.Markdown("## ✨ Step 4: Stitch Finalized Clips for Final Video")
             
             with gr.Row():
                 with gr.Column():
@@ -617,13 +618,9 @@ with gr.Blocks(title="AI Content Pipeline") as app:
                         label="✨ Smooth Transitions (fade effects)", 
                         value=True
                     )
-                    add_voiceover_checkbox = gr.Checkbox(
-                        label="🎙️ AI Voice-Over (Leo - professional narration)", 
-                        value=True
-                    )
                 with gr.Column():
                     finalize_btn = gr.Button(
-                        "✅ Create Final Video", 
+                        "✅ Stitch Final Video", 
                         variant="primary", 
                         size="lg"
                     )
@@ -638,7 +635,7 @@ with gr.Blocks(title="AI Content Pipeline") as app:
                 height=400
             )
     
-    # Voice-over section (hidden by default, shown after finalization if voice-over selected)
+    # Voice-over section (hidden by default, shown after finalization as Step 5)
     with gr.Group(visible=False) as voiceover_section:
         gr.Markdown("---")
         
@@ -707,14 +704,14 @@ with gr.Blocks(title="AI Content Pipeline") as app:
     # Regenerate individual clip
     regenerate_btn.click(
         fn=regenerate_clip_handler,
-        inputs=[clip_selector, image, segment_duration, aspect_ratio, edited_prompt],
+        inputs=[clip_selector, image, regenerate_segment_duration, aspect_ratio, edited_prompt],
         outputs=[regen_status, review_video]
     )
     
     # Finalize video
     finalize_btn.click(
         fn=finalize_video_handler,
-        inputs=[final_transitions, add_voiceover_checkbox],
+        inputs=[final_transitions],
         outputs=[finalize_status, final_reviewed_video, voiceover_section]
     )
     
@@ -741,8 +738,8 @@ if __name__ == "__main__":
         except OSError:
             continue
     
-    # Use fixed port for production deployment
-    port = 7860
+    # Port is set by the loop above (7860-7879 range)
+    # If 7860 is not available, it will use the next available port
     
     print(f"🚀 Starting AI Content Pipeline on http://0.0.0.0:{port}")
     print(f"📱 Access at: https://chat.yral.com/content")
