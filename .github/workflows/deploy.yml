@@ -46,6 +46,15 @@ jobs:
             cd /root/ai-influencers-content
             echo "📥 Pulling latest code..."
             git pull origin main
+            echo "🛑 Stopping any service using port 7860..."
+            # Stop systemd service if it exists
+            systemctl stop gradio-content.service 2>/dev/null || true
+            systemctl disable gradio-content.service 2>/dev/null || true
+            # Kill any process using port 7860
+            lsof -ti:7860 | xargs kill -9 2>/dev/null || true
+            ss -tlnp | grep :7860 | awk '{print $6}' | cut -d',' -f2 | xargs -r kill -9 2>/dev/null || true
+            sleep 2
+            
             echo "🔨 Building Docker image..."
             # Try docker compose (v2) first, fallback to docker-compose (v1)
             if command -v docker &> /dev/null && docker compose version &> /dev/null; then
