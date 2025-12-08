@@ -743,8 +743,9 @@ if __name__ == "__main__":
     
     print(f"🚀 Starting AI Content Pipeline on http://0.0.0.0:{port}")
     print(f"📱 Access at: https://chat.yral.com/content")
+    # In Docker, listen on 0.0.0.0 to allow port mapping. Host access is restricted by Docker port binding to 127.0.0.1
     app.launch(
-        server_name="127.0.0.1",  # Only listen on localhost (nginx will proxy)
+        server_name="0.0.0.0",  # Listen on all interfaces inside container (Docker handles host-side restriction)
         server_port=port, 
         share=False,
         root_path="/content"  # Important: allows Gradio to work on subpath
