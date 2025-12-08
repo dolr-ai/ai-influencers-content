@@ -47,17 +47,37 @@ jobs:
             echo "📥 Pulling latest code..."
             git pull origin main
             echo "🔨 Building Docker image..."
-            docker-compose build
-            echo "🛑 Stopping existing container..."
-            docker-compose down || true
-            echo "🚀 Starting new container with secrets..."
-            GEMINI_API_KEY="${GEMINI_API_KEY}" \
-            REPLICATE_API_TOKEN="${REPLICATE_API_TOKEN}" \
-            ELEVENLABS_API_KEY="${ELEVENLABS_API_KEY}" \
-            docker-compose up -d
-            echo "🧹 Cleaning up old Docker images..."
-            docker image prune -f
-            echo "✅ Deployment complete!"
-            echo "📊 Container status:"
-            docker-compose ps
+            # Try docker compose (v2) first, fallback to docker-compose (v1)
+            if command -v docker &> /dev/null && docker compose version &> /dev/null; then
+              docker compose build
+              echo "🛑 Stopping existing container..."
+              docker compose down || true
+              echo "🚀 Starting new container with secrets..."
+              GEMINI_API_KEY="${GEMINI_API_KEY}" \
+              REPLICATE_API_TOKEN="${REPLICATE_API_TOKEN}" \
+              ELEVENLABS_API_KEY="${ELEVENLABS_API_KEY}" \
+              docker compose up -d
+              echo "🧹 Cleaning up old Docker images..."
+              docker image prune -f
+              echo "✅ Deployment complete!"
+              echo "📊 Container status:"
+              docker compose ps
+            elif command -v docker-compose &> /dev/null; then
+              docker-compose build
+              echo "🛑 Stopping existing container..."
+              docker-compose down || true
+              echo "🚀 Starting new container with secrets..."
+              GEMINI_API_KEY="${GEMINI_API_KEY}" \
+              REPLICATE_API_TOKEN="${REPLICATE_API_TOKEN}" \
+              ELEVENLABS_API_KEY="${ELEVENLABS_API_KEY}" \
+              docker-compose up -d
+              echo "🧹 Cleaning up old Docker images..."
+              docker image prune -f
+              echo "✅ Deployment complete!"
+              echo "📊 Container status:"
+              docker-compose ps
+            else
+              echo "❌ Error: Neither 'docker compose' nor 'docker-compose' is available"
+              exit 1
+            fi
           EOF
