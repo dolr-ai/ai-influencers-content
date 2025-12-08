@@ -16,9 +16,23 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 700 ~/.ssh
+          # Write the private key, ensuring it has proper format
+          printf '%s\n' "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+          # Verify key exists and has content
+          if [ ! -s ~/.ssh/deploy_key ]; then
+            echo "❌ Error: SSH_PRIVATE_KEY secret appears to be empty"
+            exit 1
+          fi
+          # Verify key format
+          if ! grep -q "BEGIN.*PRIVATE KEY" ~/.ssh/deploy_key; then
+            echo "❌ Error: SSH_PRIVATE_KEY format appears incorrect. Should start with '-----BEGIN'"
+            exit 1
+          fi
+          # Add host to known_hosts
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
+          echo "✅ SSH key setup complete"
       
       - name: Deploy to server
         env:
