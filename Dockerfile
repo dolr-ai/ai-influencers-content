@@ -22,5 +22,6 @@ COPY . .
 # Expose port 7860 (Gradio default)
 EXPOSE 7860
 
-# Run the Gradio app
+# Run the Gradio app with unbuffered output for proper logging
+ENV PYTHONUNBUFFERED=1
 CMD ["python", "app.py"]
