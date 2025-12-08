@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  gradio-content:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gradio-content
+    ports:
+      - "127.0.0.1:7860:7860"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - REPLICATE_API_TOKEN=${REPLICATE_API_TOKEN}
+      - ELEVENLABS_API_KEY=${ELEVENLABS_API_KEY}
+    restart: unless-stopped
+    working_dir: /app
+    # Ensure container can access temp directories for video processing
+    volumes:
+      - /tmp:/tmp

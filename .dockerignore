@@ -1,0 +1,54 @@
+# Environment files
+.env
+.env.*
+
+# Virtual environments
+venv/
+myenv/
+env/
+ENV/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Documentation
+*.md
+!README.md
+
+# Deployment files (not needed in container)
+DEPLOYMENT.md
+HOSTING.md
+deploy.sh
+start_gradio.sh
+run.sh
+
+# Docker files (avoid recursion)
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# CI/CD
+.github/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

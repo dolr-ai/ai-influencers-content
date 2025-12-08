@@ -1,0 +1,49 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+      
+      - name: Deploy to server
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          REPLICATE_API_TOKEN: ${{ secrets.REPLICATE_API_TOKEN }}
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no root@${SSH_HOST} bash << EOF
+            set -e
+            cd /root/ai-influencers-content
+            echo "📥 Pulling latest code..."
+            git pull origin main
+            echo "🔨 Building Docker image..."
+            docker-compose build
+            echo "🛑 Stopping existing container..."
+            docker-compose down || true
+            echo "🚀 Starting new container with secrets..."
+            GEMINI_API_KEY="${GEMINI_API_KEY}" \
+            REPLICATE_API_TOKEN="${REPLICATE_API_TOKEN}" \
+            ELEVENLABS_API_KEY="${ELEVENLABS_API_KEY}" \
+            docker-compose up -d
+            echo "🧹 Cleaning up old Docker images..."
+            docker image prune -f
+            echo "✅ Deployment complete!"
+            echo "📊 Container status:"
+            docker-compose ps
+          EOF
