@@ -154,18 +154,20 @@ def generate_all_clips(
     segment_duration: int,
     replicate_api_token: str,
     aspect_ratio: str = "9:16",
-    progress_callback: Optional[Callable] = None
+    progress_callback: Optional[Callable] = None,
+    reference_image_paths: Optional[List[str]] = None,
 ) -> List[str]:
     """
     Generate all video clips for the script.
     
     Args:
         script_segments: List of script segment dictionaries
-        reference_image_path: Path to the AI influencer's reference image
+        reference_image_path: Default path to the AI influencer's reference image
         segment_duration: Duration of each segment (4, 6, or 8)
         replicate_api_token: Replicate API token
         aspect_ratio: Video aspect ratio
         progress_callback: Optional callback for progress updates
+        reference_image_paths: Optional list of per-segment reference image paths
     
     Returns:
         List of paths to generated video files
@@ -204,9 +206,16 @@ def generate_all_clips(
             
             prompt = ". ".join(prompt_parts) + "."
         
+        # Choose reference image for this segment (fallback to default if None/absent)
+        segment_image_path = reference_image_path
+        if reference_image_paths and i < len(reference_image_paths):
+            candidate_path = reference_image_paths[i]
+            if candidate_path:
+                segment_image_path = candidate_path
+        
         video_path = generate_single_clip(
             prompt=prompt,
-            reference_image_path=reference_image_path,
+            reference_image_path=segment_image_path,
             duration=segment_duration,
             replicate_api_token=replicate_api_token,
             aspect_ratio=aspect_ratio,
