@@ -61,7 +61,7 @@ def generate_voiceover(
     Returns:
         Path to the final video with new voice-over
     """
-    print(f"🎤 Starting voice-over generation...")
+    print("🎤 Starting voice-over generation...")
     
     # Initialize ElevenLabs client
     # Strip whitespace/newlines from API key to prevent header errors

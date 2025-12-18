@@ -130,7 +130,7 @@ def parse_edited_script(edited_text: str, original_segments: List[Dict]) -> List
         # If the user provides JSON directly
         if edited_text.strip().startswith("["):
             return json.loads(edited_text)
-    except:
+    except (json.JSONDecodeError, ValueError):
         pass
     
     # Return original if we can't parse edits
