@@ -9,8 +9,6 @@ import base64
 import os
 import tempfile
 from typing import List, Dict, Optional, Callable
-from PIL import Image
-import io
 
 
 def image_to_data_uri(image_path: str) -> str:

@@ -938,7 +938,7 @@ if __name__ == "__main__":
     # If 7860 is not available, it will use the next available port
     
     print(f"🚀 Starting AI Content Pipeline on http://0.0.0.0:{port}")
-    print(f"📱 Access at: https://chat.yral.com/content")
+    print("📱 Access at: https://chat.yral.com/content")
     # In Docker, listen on 0.0.0.0 to allow port mapping. Host access is restricted by Docker port binding to 127.0.0.1
     app.launch(
         server_name="0.0.0.0",  # Listen on all interfaces inside container (Docker handles host-side restriction)
