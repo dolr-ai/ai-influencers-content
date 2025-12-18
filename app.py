@@ -228,7 +228,6 @@ def generate_video_handler(
     seg5_image,
     segment_duration: int,
     aspect_ratio: str,
-    add_transitions: bool,
     transition_style: str,
     transition_duration: float,
     transition_overrides_json: str,
@@ -339,7 +338,9 @@ def generate_video_handler(
         final_video = stitch_videos(
             video_paths,
             output_path,
-            add_transitions=False,
+            add_transitions=False,  # Preview always has no transitions
+            add_subtitles=add_subtitles,
+            script_segments=current_script_segments,
         )
         
         return (
@@ -474,7 +475,6 @@ def regenerate_clip_handler(
 
 
 def finalize_video_handler(
-    add_transitions: bool,
     transition_style: str,
     transition_duration: float,
     transition_overrides_json: str,
@@ -492,6 +492,8 @@ def finalize_video_handler(
         transition_style = (transition_style or "fade").lower()
         if transition_style not in {"none", "fade", "crossfade"}:
             transition_style = "fade"
+        
+        add_transitions = transition_style != "none"
         
         try:
             transition_overrides = parse_transition_overrides(transition_overrides_json)
@@ -676,10 +678,6 @@ with gr.Blocks(title="AI Content Pipeline") as app:
                                 value="9:16", 
                                 label="📐 Aspect Ratio (9:16 for TikTok/Reels, 16:9 for YouTube)"
                             )
-                            add_transitions = gr.Checkbox(
-                                label="✨ Add Smooth Transitions (fade effects)", 
-                                value=True
-                            )
                             transition_style = gr.Dropdown(
                                 ["fade", "crossfade", "none"],
                                 value="fade",
@@ -798,11 +796,6 @@ with gr.Blocks(title="AI Content Pipeline") as app:
                 
                 with gr.Row():
                     with gr.Column():
-                        final_transitions = gr.Checkbox(
-                            label="✨ Smooth Transitions (use settings from Step 2)", 
-                            value=True
-                        )
-                    with gr.Column():
                         finalize_btn = gr.Button(
                             "✅ Stitch Final Video", 
                             variant="primary", 
@@ -881,7 +874,6 @@ with gr.Blocks(title="AI Content Pipeline") as app:
             seg5_image,
             segment_duration,
             aspect_ratio,
-            add_transitions,
             transition_style,
             transition_duration,
             transition_overrides_json,
@@ -907,7 +899,7 @@ with gr.Blocks(title="AI Content Pipeline") as app:
     # Finalize video
     finalize_btn.click(
         fn=finalize_video_handler,
-        inputs=[final_transitions, transition_style, transition_duration, transition_overrides_json, add_subtitles],
+        inputs=[transition_style, transition_duration, transition_overrides_json, add_subtitles],
         outputs=[finalize_status, final_reviewed_video, voiceover_section]
     )
     
